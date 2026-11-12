@@ -1,0 +1,37 @@
+[project]
+name = "zms-general-hr"
+version = "1.0.0"
+description = "資料助秘之一般公司人事薪資差勤"
+authors = [{ name = "吳玉柱" }]
+requires-python = ">=3.10"
+dependencies = ["flet==1.1.2", "flet-audio==1.1.2", "pymysql>=1.1"]
+
+[tool.flet]
+org = "com.achir"
+product = "資料助秘之一般公司人事薪資差勤"
+company = "吳玉柱"
+copyright = "© 2026 吳玉柱"
+
+[tool.flet.app]
+path = "."
+exclude = ["tests", "tools", "packaging", "data", ".venv", "dist", "dist-installer", "build", "docs", "run_web.py",
+           "*.spec", "assets/icon.ico", "*.log", "dist-mac", "build-mac", "dist-android", "dist-ios", "android",
+           "data_mobile", "run_web_mobile.py", "run_web_tablet.py", "*.pdf", "*.zmsgl", "*.docx", "web.log", ".claude"]
+
+[tool.flet.deep_linking]
+scheme = "zmshr"
+host = "connect"
+
+[tool.flet.android]
+permissions = { "android.permission.INTERNET" = true }
+
+[tool.flet.ios]
+bundle_id = "com.achir.zmsgeneralhr"
+team_id = "7BN6XJ59KP"
+
+[tool.flet.ios.info]
+NSLocalNetworkUsageDescription = "連到公司電腦上的人事薪資差勤系統"
+ITSAppUsesNonExemptEncryption = false
+UIRequiresFullScreen = true
+UISupportedInterfaceOrientations = ["UIInterfaceOrientationPortrait"]
+"UISupportedInterfaceOrientations~ipad" = ["UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"]
