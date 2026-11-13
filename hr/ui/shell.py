@@ -82,9 +82,10 @@ def menu():
 
 
 def build_screen(sid, ctx, **kw):
-    from . import admin, attview, dashboard, empview, glview, helpview, leaveview, masters, occview, payview, reports
+    from . import (admin, attview, dashboard, empview, glview, helpview, leaveview, masters, occview, payview, reports,
+                   selfview)
     table = {
-        "home": dashboard.Dashboard, "self": dashboard.SelfService,
+        "home": dashboard.Dashboard, "self": selfview.SelfService,
         "employees": empview.Employees, "staff_roster": reports.StaffRoster, "headcount": reports.Headcount,
         "roster": attview.Roster, "punches": attview.Punches, "att_daily": attview.Daily, "att_month": attview.Monthly,
         "disasters": attview.Disasters,
@@ -296,8 +297,11 @@ class App:
         p = self.page
         from . import mobile
         hide = mobile.DESKTOP_ONLY if self.mobile else set()
+        if self.books.employee_only:              # 只有員工自助的帳號：沒有公司首頁
+            hide = set(hide) | {"home"}
         self.groups = [(g, ic, tone, [it for it in items if self.allowed(it[3], it[4]) and it[0] not in hide])
                        for g, ic, tone, items in menu()]
+        self.start_screen = "self" if self.books.employee_only else "home"
         self.groups = [g for g in self.groups if g[3]]
         if self.mobile and T.MOBILE:
             self.expanded = set()
@@ -346,7 +350,7 @@ class App:
         p.controls.clear()
         layout = ft.Row([side, ft.Column([top, self.body], expand=True, spacing=0)], expand=True, spacing=0)
         p.add(ft.SafeArea(layout, expand=True) if self.mobile else layout)
-        self.go("home")
+        self.go(self.start_screen)
         if self.mobile:                              # iPad：資料在電腦上，更新檢查走手機版的方式
             from . import mobile
             p.run_thread(mobile.check_update, self)
@@ -485,6 +489,12 @@ class App:
         speaker.stop()
         self.books.logout()
         self.current = "home"
+        if self.mobile and getattr(self, "geo", None) is not None:
+            try:
+                self.page.services.remove(self.geo)
+            except Exception:
+                pass
+            self.geo = None
         if self.mobile:
             from . import mobile
             self.page.drawer = None

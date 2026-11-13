@@ -29,10 +29,13 @@ def leave_dialog(ctx, emp, on_done, approve=False):
         t = next((x for x in types if x["code"] == lt.value), None)
         note.value = t["law_note"] if t else ""
         if t and t["balance"] and code():
-            left = b.balance_left(code(), t["balance"], rocdate.today())
-            note.value += "　目前剩餘 %s 小時。" % C.hours(left)
+            try:
+                left = b.balance_info(code(), t["balance"])
+                note.value += "　目前剩餘 %s 小時。" % C.hours(left)
+            except Exception:
+                pass
         try:
-            h, _, _, txt = b.leave_hours(code(), lt.value, s.value, e_.value)
+            h, txt = b.leave_hours_check(code(), lt.value, s.value, e_.value)
             calc.value = "試算：%s 小時（%s）" % (C.hours(h), txt)
         except Exception as ex:
             calc.value = str(ex)

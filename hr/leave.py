@@ -73,6 +73,20 @@ class LeaveMixin:
         hrs = (Decimal(mins) / 60).quantize(Decimal("0.01"))
         return hrs, s, en, "共 %d 個工作日、%s 小時" % (work_days, laws._fmt(hrs))
 
+    def _may_see(self, emp):
+        if emp != self.my_emp and not (self.can("LEV", 1) or self.is_manager_of(emp)):
+            self.need("LEV", 1)
+
+    def leave_hours_check(self, emp, ltype, start, end):
+        """請假視窗試算用。回傳 (時數, 說明)。"""
+        self._may_see(emp)
+        h, _, _, txt = self.leave_hours(emp, ltype, start, end)
+        return h, txt
+
+    def balance_info(self, emp, kind):
+        self._may_see(emp)
+        return self.balance_left(emp, kind, dt.date.today())
+
     def request_leave(self, emp, ltype, start, end, reason="", proxy="", approve=False, occ_case=0, disaster=0):
         emp = emp or self.my_emp
         if emp != self.my_emp:

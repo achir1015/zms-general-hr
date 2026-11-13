@@ -226,7 +226,7 @@ def kpis(items, spacing=16):
 def split(left, right, spacing=14):
     """左右兩欄（清單＋明細）：手機版改成上下排列。"""
     if MOBILE:
-        return ft.Column([left, right], spacing=12)
+        return ft.Column([left, right], spacing=12, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
     return ft.Row([left, right], expand=True, spacing=spacing, vertical_alignment=ft.CrossAxisAlignment.START)
 
 
@@ -448,7 +448,17 @@ class Ctx:
             inset_padding=ft.Padding.symmetric(horizontal=12, vertical=24) if MOBILE else None))
 
     def close(self):
-        self.page.pop_dialog()
+        """關閉最上層的對話框（不是提示訊息 SnackBar；成功訊息常在關閉對話框前先顯示）。"""
+        try:
+            dlg = next((d for d in reversed(self.page._dialogs.controls)
+                        if d.open and not isinstance(d, ft.SnackBar)), None)
+        except Exception:
+            dlg = None
+        if dlg is None:
+            self.page.pop_dialog()
+            return
+        dlg.open = False
+        dlg.update()
 
     async def save_as(self, name, ext):
         path = await ft.FilePicker().save_file(dialog_title="另存新檔", file_name=name, allowed_extensions=[ext])

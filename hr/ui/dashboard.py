@@ -1,4 +1,4 @@
-"""首頁（關鍵數字、近 12 個月人事成本、快捷功能、待辦提醒）與員工自助（電腦打卡、請假加班、薪資單、班表匯出）。"""
+"""首頁：關鍵數字、近 12 個月人事成本、快捷功能、待辦提醒。（員工自助在 selfview.py）"""
 import datetime as dt
 from decimal import Decimal
 
@@ -100,103 +100,6 @@ class Dashboard(ft.Column):
         else:
             blocks.append(todo)
         super().__init__(blocks, spacing=18, scroll=ft.ScrollMode.AUTO, expand=True)
-
-
-class SelfService(ft.Column):
-    """員工自助：今天的班與電腦打卡、特休補休餘額、請假加班申請、薪資單、匯出到小柯班表助手。"""
-
-    def __init__(self, ctx):
-        self.ctx = ctx
-        b = ctx.books
-        if not b.my_emp:
-            super().__init__([T.page_header(ft.Icons.FINGERPRINT, "我的打卡與假勤", "員工自助", "teal"),
-                              C.info_box("此帳號沒有對應到員工資料。請系統管理員到「使用者與權限」把帳號對應到員工編號，"
-                                         "或在「員工資料」按「建立員工帳號」。", "amber", ft.Icons.WARNING_AMBER)],
-                             spacing=16, expand=True)
-            return
-        self.body = ft.Column(spacing=16)
-        super().__init__([T.page_header(ft.Icons.FINGERPRINT, "我的打卡與假勤", "上下班打卡、請假、加班、薪資單", "teal",
-                                        [T.btn("請假", ft.Icons.BEACH_ACCESS, lambda e: self.leave()),
-                                         T.btn("加班", ft.Icons.MORE_TIME, lambda e: self.ot(), kind="outline"),
-                                         T.btn("匯出到小柯班表助手", ft.Icons.PHONE_IPHONE, self.export_xk, kind="outline")]),
-                          self.body], spacing=16, scroll=ft.ScrollMode.AUTO, expand=True)
-        self.refresh(False)
-
-    def refresh(self, upd=True):
-        b = self.ctx.books
-        t = b.my_today()
-        bal = b.balance_summary(b.my_emp)
-        s = t["shift"]
-        ps = t["punches"]
-        shift_text = "%s %s" % (s["code"], s["name"]) + (" %s～%s" % (C.hm(s["start"]), C.hm(s["end"])) if s["start"] else "")
-        punch_rows = [ft.Row([T.chip("上班" if p["kind"] == "I" else "下班", "teal" if p["kind"] == "I" else "violet"),
-                              ft.Text(p["ts"].strftime("%H:%M:%S"), size=15, weight=ft.FontWeight.W_700),
-                              T.muted("" if p["ok"] else "待確認", 12)], spacing=10) for p in ps]
-        punch_card = C.section("今天 %s（%s）" % (rocdate.show(t["date"]), "一二三四五六日"[t["date"].weekday()]),
-                               ft.Icons.TODAY, "teal",
-                               ft.Text(shift_text, size=20, weight=ft.FontWeight.W_800, color=T.PRIMARY),
-                               ft.Row([big_btn("上班打卡", ft.Icons.LOGIN, "#0F766E", lambda e: self.punch("I")),
-                                       big_btn("下班打卡", ft.Icons.LOGOUT, "#6D28D9", lambda e: self.punch("O"))],
-                                      spacing=16, wrap=True),
-                               C.info_box("這裡是「電腦打卡」。在外面或要用手機定位打卡時，請用手機開啟公司提供的打卡網址"
-                                          "（人資在「系統管理 → 手機打卡與連線」可以看到網址與 QR Code）。"),
-                               *(punch_rows or [T.muted("今天還沒有打卡紀錄")]), expand=1)
-        bal_card = C.section("我的假期額度", ft.Icons.HOURGLASS_BOTTOM, "amber",
-                             ft.Row([T.kpi("特休剩餘", "%s 小時" % C.hours(bal["annual"]), ft.Icons.BEACH_ACCESS, "green",
-                                           sub="約 %s 天" % C.hours(bal["annual"] / 8)),
-                                     T.kpi("補休剩餘", "%s 小時" % C.hours(bal["comp"]), ft.Icons.MORE_TIME, "sky")],
-                                    spacing=12), expand=1)
-        today = dt.date.today()
-        lv = b.leave_requests(today - dt.timedelta(days=60), today + dt.timedelta(days=120), b.my_emp)
-        lgrid = T.Grid([("lname", "假別", "s", 100), ("start_at", "開始", "s", 140), ("end_at", "結束", "s", 140),
-                        ("hours", "時數", "s", 60), ("status_name", "狀態", "s", 80)], height=230,
-                       on_pick=self.pick_leave)
-        lgrid.set_rows([dict(r, start_at=C.dt_text(r["start_at"]), end_at=C.dt_text(r["end_at"]), hours=C.hours(r["hours"]))
-                        for r in lv])
-        slips = b.my_payslips()
-        sgrid = T.Grid([("ym", "月份", "s", 100), ("title", "名稱", "s", 160), ("gross", "應發", "n", 90),
-                        ("net", "實發", "n", 90)], height=230, on_pick=self.open_slip)
-        sgrid.set_rows([dict(r, ym=rocdate.ym_show(r["ym"])) for r in slips])
-        self.body.controls = [T.split(punch_card, bal_card),
-                              T.split(C.section("我的請假（點選可撤銷待審核的單）", ft.Icons.BEACH_ACCESS, "amber", lgrid, expand=1),
-                                      C.section("我的薪資單", ft.Icons.RECEIPT_LONG, "green", sgrid, expand=1))]
-        if upd:
-            self.update()
-
-    def punch(self, kind):
-        import socket
-        r = self.ctx.guard(self.ctx.books.punch, kind, source="pc", device="電腦 " + socket.gethostname())
-        if r:
-            self.ctx.toast(r["text"])
-            self.refresh()
-
-    def leave(self):
-        from .leaveview import leave_dialog
-        leave_dialog(self.ctx, self.ctx.books.my_emp, self.refresh)
-
-    def ot(self):
-        from .leaveview import ot_dialog
-        ot_dialog(self.ctx, self.ctx.books.my_emp, self.refresh)
-
-    def pick_leave(self, r):
-        if r["status"] != 0:
-            return
-        self.ctx.confirm("撤銷請假", "要撤銷這張待審核的請假單嗎？",
-                         lambda: self.ctx.guard(self.ctx.books.cancel_leave, r["id"], ok="已撤銷") and self.refresh())
-
-    def open_slip(self, r):
-        from ..printing import payslips_page, write_and_open
-        b = self.ctx.books
-        s = self.ctx.guard(b.payslip, r["id"])
-        if s:
-            write_and_open(payslips_page(b.company(), [s]), "薪資單")
-
-    async def export_xk(self, e):
-        b = self.ctx.books
-        ym1, ym2 = C.ym_now(), C.ym_now(2)
-        await self.ctx.save_generated("小柯班表_%s.zip" % b.my_emp,
-                                      lambda p: b.export_xiaoke_shift(b.my_emp, ym1, ym2, p), open_after=False)
-        self.ctx.toast("已匯出本月起 3 個月的班表：傳到手機後在小柯班表助手「⋯ → 還原班表」")
 
 
 def big_btn(text, icon, color, on_click):

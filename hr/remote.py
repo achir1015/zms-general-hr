@@ -1,4 +1,4 @@
-"""手機端：用與電腦版相同介面（Biz）透過 API 存取人事薪資資料。
+"""手機端：用與電腦版相同介面（Biz）透過 API 存取人事薪資差勤資料。
 
 畫面程式只要拿到 RemoteBooks，就和電腦版一樣呼叫 ctx.books.xxx()。
 權限判斷（can／level／need）在手機端先做一次（決定選單），電腦端每次呼叫再嚴格檢查一次。
@@ -142,8 +142,16 @@ class RemoteBooks:
             raise BizError("您沒有「%s」的%s權限" % (FUNC_NAMES.get(func, func), "維護" if lvl >= 2 else "查詢"))
 
     @property
-    def see_cost(self):
-        return self.can("COST", 1)
+    def my_emp(self):
+        return (self.user or {}).get("emp_code") or ""
+
+    @property
+    def see_salary(self):
+        return self.can("SAL", 1)
+
+    @property
+    def employee_only(self):
+        return bool(self.user) and not self.user.get("is_admin") and not any(int(v or 0) for v in self.perms.values())
 
     def __getattr__(self, name):
         if name.startswith("_"):

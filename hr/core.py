@@ -162,6 +162,11 @@ class Base:
             raise BizError("您沒有「%s」的%s權限" % (FUNC_NAMES.get(func, func), "維護" if lvl >= 2 else "查詢"))
 
     @property
+    def employee_only(self):
+        """只有員工自助（沒有任何管理權限）的帳號。"""
+        return bool(self.user) and not self.user["is_admin"] and not any(int(v or 0) for v in self.perms.values())
+
+    @property
     def see_salary(self):
         return self.can("SAL", 1)
 
@@ -181,6 +186,7 @@ class Base:
 
     # ================================================================ 使用者
     def users(self):
+        self.need("SYS", 1)
         rows = self.db.rows("SELECT u.uid, u.name, u.role, u.is_admin, u.active, u.last_login, u.emp_code, "
                             "e.name AS emp_name FROM users u LEFT JOIN employees e ON e.code=u.emp_code ORDER BY u.uid")
         perms = self.db.rows("SELECT uid, func, lvl FROM user_perms")
@@ -283,6 +289,7 @@ class Base:
         self.log("user_delete", uid)
 
     def audit(self, limit=500, uid=""):
+        self.need("SYS", 1)
         sql = "SELECT * FROM audit_log" + (" WHERE uid=%s" if uid else "") + " ORDER BY id DESC LIMIT %s"
         return self.db.rows(sql, ((uid, limit) if uid else (limit,)))
 
@@ -324,6 +331,7 @@ class Base:
 
     # ================================================================ 基本資料
     def master_rows(self, name, active_only=False, search=""):
+        self.need("BAS", 1)
         m = MASTERS[name]
         where, args = [], []
         if active_only and any(f[0] == "active" for f in m["fields"]):

@@ -282,6 +282,7 @@ class LawMixin:
         return P
 
     def law_table(self):
+        self.need("INS", 1)
         rows = self.db.rows("SELECT k, eff_date, v FROM law_params ORDER BY k, eff_date DESC")
         notes = {k: (n, d) for k, n, _, d in LAW_PARAMS}
         for r in rows:
@@ -322,6 +323,11 @@ class LawMixin:
         return [Decimal(r["amount"]) for r in self.db.rows("SELECT amount FROM ins_grades WHERE kind=%s AND eff_date=%s "
                                                              "ORDER BY amount", (kind, eff))]
 
+    def grade_table(self, kind):
+        """畫面用：(各級金額, 生效日清單)。"""
+        self.need("INS", 1)
+        return self.grades(kind), self.grade_dates(kind)
+
     def save_grades(self, kind, eff, amounts):
         """以新的生效日儲存一整份分級表（例如明年基本工資調整後）。amounts 可以是文字（逗號或換行分隔）。"""
         self.need("INS")
@@ -361,6 +367,8 @@ class LawMixin:
     def premium_preview(self, emp_code, on=None):
         """員工資料畫面用：依目前薪資試算每月保費。"""
         on = on or dt.date.today()
+        if emp_code != self.my_emp:
+            self.need("SAL", 1)
         e = self.employee(emp_code)
         P = self.params(on)
         basis = self.wage_basis(e)

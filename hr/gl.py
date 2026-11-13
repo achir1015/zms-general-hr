@@ -37,6 +37,7 @@ FORMAT = "zms-gl"
 class GLMixin:
     # ================================================================ 科目對照
     def gl_map(self):
+        self.need("GL", 1)
         rows = {r["k"]: r for r in self.db.rows("SELECT * FROM gl_map")}
         out = []
         for k, a, n, desc in GL_MAP:

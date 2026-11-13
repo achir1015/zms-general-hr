@@ -33,7 +33,7 @@ class Employees(ft.Row):
                             ("title", "職稱", "s", 90), ("status_name", "狀態", "s", 70), ("hire_date", "到職日", "d", 90),
                             ("mobile", "手機", "s", 110)], on_pick=lambda r: self.edit(r["code"]))
         tools = [self.search, self.dept, self.status, ctx.export_button(self.grid, "員工資料")]
-        if self.editable:
+        if self.editable and not ctx.app.mobile:      # 名冊匯入、建立帳號在電腦上操作
             tools.append(ft.PopupMenuButton(
                 content=T.btn("更多", ft.Icons.MORE_HORIZ, None, kind="outline"),
                 items=[ft.PopupMenuItem("下載名冊範本（CSV）", icon=ft.Icons.DOWNLOAD, on_click=self.template),
@@ -168,7 +168,7 @@ class Employees(ft.Row):
         if not b.see_salary:
             return [C.info_box("您沒有「薪資個資」權限。", "amber")]
         have = {r["item"]: r["amount"] for r in b.emp_items(self.code)}
-        items = b.db.rows("SELECT * FROM pay_items WHERE active=1 AND method='F' ORDER BY kind DESC, sort")
+        items = b.pay_items_fixed()
         self.item_inputs = {}
         rows = [C.info_box("每月固定發給的津貼（例如職務加給、伙食津貼、全勤獎金）與固定扣款（例如職工福利金）。"
                            "經常性津貼會計入加班費與投保薪資的基數。")]

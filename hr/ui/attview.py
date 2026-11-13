@@ -34,14 +34,17 @@ class Roster(ft.Column):
         self.cells = {}
         tools = [self.ym, self.dept]
         if self.editable:
-            tools += [T.btn("循環排班", ft.Icons.AUTO_MODE, lambda e: self.fill()),
+            tools.append(T.btn("循環排班", ft.Icons.AUTO_MODE, lambda e: self.fill()))
+        if self.editable and not ctx.app.mobile:
+            tools += [
                       ft.PopupMenuButton(content=T.btn("匯入", ft.Icons.UPLOAD_FILE, None, kind="outline"), items=[
                           ft.PopupMenuItem("月班表系統 XML 備份", icon=ft.Icons.CODE, on_click=self.import_xml),
                           ft.PopupMenuItem("Excel（CSV）班表", icon=ft.Icons.TABLE_VIEW, on_click=self.import_csv)])]
-        tools.append(ft.PopupMenuButton(content=T.btn("匯出", ft.Icons.DOWNLOAD, None, kind="outline"), items=[
-            ft.PopupMenuItem("月班表系統 XML", icon=ft.Icons.CODE, on_click=self.export_xml),
-            ft.PopupMenuItem("Excel（CSV）班表", icon=ft.Icons.TABLE_VIEW, on_click=self.export_csv),
-            ft.PopupMenuItem("小柯班表助手（手機）", icon=ft.Icons.PHONE_IPHONE, on_click=lambda e: self.export_xk())]))
+        if not ctx.app.mobile:                       # 檔案匯入匯出在電腦上操作
+            tools.append(ft.PopupMenuButton(content=T.btn("匯出", ft.Icons.DOWNLOAD, None, kind="outline"), items=[
+                ft.PopupMenuItem("月班表系統 XML", icon=ft.Icons.CODE, on_click=self.export_xml),
+                ft.PopupMenuItem("Excel（CSV）班表", icon=ft.Icons.TABLE_VIEW, on_click=self.export_csv),
+                ft.PopupMenuItem("小柯班表助手（手機）", icon=ft.Icons.PHONE_IPHONE, on_click=lambda e: self.export_xk())]))
         super().__init__([T.page_header(ft.Icons.CALENDAR_VIEW_MONTH, "排班表", "選上方的班別，再點員工的日期格子；"
                                         "沒有排班的日子依預設班別（週一～五預設班、週六休息日、週日例假）", "teal", tools),
                           T.card(ft.Column([self.palette], spacing=6), padding=12),
@@ -148,11 +151,10 @@ class Roster(ft.Column):
         b = self.ctx.books
         if self.ctx.guard(b.set_roster, emp, d, self.brush) is None:
             return
-        e = b.employee(emp)
-        s = b.schedules([e], d, d)[(emp, d)]
+        c = b.roster_cell(emp, d)
         cell = self.cells.get((emp, d))
         if cell:
-            new = self._cell(emp, dict(d=d, code=s.code, color=s.color, set=bool(self.brush)))
+            new = self._cell(emp, c)
             cell.content, cell.bgcolor, cell.border, cell.tooltip = new.content, new.bgcolor, new.border, new.tooltip
             cell.update()
 
@@ -160,8 +162,7 @@ class Roster(ft.Column):
         b = self.ctx.books
         first, last = rocdate.read(self.ym.value[:4] + "/" + self.ym.value[4:] + "/01"), None
         last = rocdate.month_last(first)
-        emps = b.active_employees(first, last, self.dept.value or "")
-        checks = {e["code"]: ft.Checkbox(label="%s %s" % (e["code"], e["name"]), value=True) for e in emps}
+        checks = {r["emp"]: ft.Checkbox(label="%s %s" % (r["emp"], r["name"]), value=True) for r in self.m["rows"]}
         d1 = T.date_field("開始日", first, width=160)
         d2 = T.date_field("結束日", last, width=160)
         pat = T.field("循環樣式（班別代號，以逗號分隔）", "D,D,D,D,D,休,例", width=360,
@@ -354,7 +355,7 @@ class Daily(ft.Column):
             return
         if not b.can("ATT", 1):
             return
-        recs = self.ctx.guard(b.attendance, d1, d2, None, self.dept.value or "") or []
+        recs = self.ctx.guard(b.attendance_daily, d1, d2, self.dept.value or "") or []
         rows = []
         for r in recs:
             bad = bool(r["late"] or r["early"] or r["absent"] or r["missing"])

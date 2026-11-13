@@ -225,6 +225,11 @@ class EmpMixin:
         return self.db.rows("SELECT x.item, x.amount, p.name, p.kind, p.regular, p.taxable FROM emp_items x JOIN pay_items p "
                             "ON p.code=x.item WHERE x.emp=%s ORDER BY p.kind DESC, p.sort", (code,))
 
+    def pay_items_fixed(self):
+        """員工固定薪資項目可選的科目。"""
+        self.need("EMP", 1)
+        return self.db.rows("SELECT * FROM pay_items WHERE active=1 AND method='F' ORDER BY kind DESC, sort")
+
     def save_emp_items(self, code, items):
         """items＝{科目: 金額}；金額 0 表示刪除。"""
         self.need("EMP")

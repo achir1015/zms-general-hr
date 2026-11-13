@@ -31,7 +31,8 @@ DENY = {"login", "logout", "create_first_admin", "log", "db"}
 # 員工自助（方法內只處理登入者本人的資料）
 SELF_METHODS = {"my_today", "punch", "my_payslips", "payslip", "leave_types", "request_leave", "leave_requests",
                 "cancel_leave", "request_overtime", "overtime_list", "my_balance", "my_profile", "leave_hours_self",
-                "has_users", "company_brief"}
+                "has_users", "company_brief", "company", "options", "change_password", "my_roster",
+                "is_manager_of"}
 
 
 def allowed_methods(cls):
@@ -44,7 +45,7 @@ def allowed_methods(cls):
             src = inspect.getsource(fn)
         except (OSError, TypeError):
             continue
-        if name in SELF_METHODS or "self.need(" in src:
+        if name in SELF_METHODS or "self.need(" in src or "self._may_see(" in src:
             out.add(name)
     return out
 

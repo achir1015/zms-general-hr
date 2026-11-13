@@ -120,6 +120,7 @@ class OccMixin:
 
     def occ_leave(self, cid, start, end, reason="公傷病假"):
         """登錄公傷病假（核准）。"""
+        self.need("OCC")
         c = self.db.row("SELECT * FROM occ_cases WHERE id=%s", (cid,))
         if not c:
             raise BizError("職災案件不存在")
@@ -127,6 +128,7 @@ class OccMixin:
 
     def occ_benefit_estimate(self, cid, days_off):
         """職災保險傷病給付試算：不能工作第 4 日起，前 2 個月 70%、之後 50%（平均月投保薪資 ÷ 30）。"""
+        self.need("OCC", 1)
         c = self.db.row("SELECT * FROM occ_cases WHERE id=%s", (cid,))
         e = self.employee(c["emp"])
         _, occ, _, _ = self.insured_wages(e, self.wage_basis(e), c["injury_at"].date())

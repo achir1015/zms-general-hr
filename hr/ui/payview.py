@@ -157,7 +157,7 @@ class Payroll(ft.Column):
             else:
                 acts.append(T.btn("取消發放標示", ft.Icons.UNDO, lambda e: self.do(lambda i: b.mark_paid(i, False),
                                                                              "已取消"), kind="outline"))
-            if st >= 1:
+            if st >= 1 and not self.ctx.app.mobile:          # 轉帳檔在電腦上產生
                 acts.append(T.btn("銀行轉帳檔", ft.Icons.ACCOUNT_BALANCE, self.bank, kind="outline"))
                 if r["kind"] == "M":
                     acts.append(T.btn("關帳本月", ft.Icons.LOCK, lambda e: self.close_month(r["ym"]), kind="outline"))
@@ -253,7 +253,7 @@ class Bonus(ft.Column):
     def __init__(self, ctx):
         self.ctx = ctx
         b = ctx.books
-        rules = b.db.rows("SELECT id, name FROM bonus_rules WHERE active=1 ORDER BY id")
+        rules = b.bonus_rule_list()
         self.rule = T.dropdown("獎金規則", [(str(r["id"]), r["name"]) for r in rules], str(rules[0]["id"]) if rules else None,
                                width=220, filterable=False, on_select=lambda e: self.preview())
         self.as_of = T.date_field("計算基準日", dt.date(dt.date.today().year, 12, 31), width=170)
@@ -331,8 +331,7 @@ class LawParams(ft.Row):
 
     def load_grades(self, upd=True):
         b = self.ctx.books
-        dates = b.grade_dates(self.kind.value)
-        g = b.grades(self.kind.value)
+        g, dates = b.grade_table(self.kind.value)
         self.gtext.value = "\n".join("{:,}".format(int(x)) for x in g)
         self.ginfo.value = "共 %d 級；生效日：%s" % (len(g), "、".join(rocdate.show(d) for d in dates))
         if upd:

@@ -1,10 +1,10 @@
 [project]
 name = "zms-general-hr"
-version = "1.0.0"
+version = "1.1.0"
 description = "資料助秘之一般公司人事薪資差勤"
 authors = [{ name = "吳玉柱" }]
 requires-python = ">=3.10"
-dependencies = ["flet==1.1.2", "flet-audio==1.1.2", "pymysql>=1.1"]
+dependencies = ["flet==1.1.2", "flet-audio==1.1.2", "flet-geolocator==1.1.2", "pymysql>=1.1"]
 
 [tool.flet]
 org = "com.achir"
@@ -22,8 +22,10 @@ exclude = ["tests", "tools", "packaging", "data", ".venv", "dist", "dist-install
 scheme = "zmshr"
 host = "connect"
 
-[tool.flet.android]
-permissions = { "android.permission.INTERNET" = true }
+[tool.flet.android.permission]
+"android.permission.INTERNET" = true
+"android.permission.ACCESS_FINE_LOCATION" = true          # 手機 GPS 打卡（只在使用 App 時定位）
+"android.permission.ACCESS_COARSE_LOCATION" = true
 
 [tool.flet.ios]
 bundle_id = "com.achir.zmsgeneralhr"
@@ -31,6 +33,7 @@ team_id = "7BN6XJ59KP"
 
 [tool.flet.ios.info]
 NSLocalNetworkUsageDescription = "連到公司電腦上的人事薪資差勤系統"
+NSLocationWhenInUseUsageDescription = "上下班打卡時確認您在公司打卡地點的範圍內"
 ITSAppUsesNonExemptEncryption = false
 UIRequiresFullScreen = true
 UISupportedInterfaceOrientations = ["UIInterfaceOrientationPortrait"]

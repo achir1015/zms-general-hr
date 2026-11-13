@@ -9,6 +9,8 @@ from .core import D0, DEPT_COST, EMP_STATUS, date
 
 class ReportsMixin:
     def dashboard(self):
+        if self.employee_only:
+            self.need("EMP", 1)                 # 員工帳號沒有公司首頁，改用「我的打卡與假勤」
         today = dt.date.today()
         ym = rocdate.ym(today)
         out = dict(headcount=self.headcount(today), ym=ym)

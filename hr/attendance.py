@@ -159,6 +159,31 @@ class AttMixin:
             d += dt.timedelta(days=1)
         return out
 
+    def roster_cell(self, emp, d):
+        """排班表點格子後重畫該格用。"""
+        self.need("ATT", 1)
+        d = date(d)
+        s = self.schedules([self.employee(emp)], d, d)[(emp, d)]
+        explicit = bool(self.db.value("SELECT 1 FROM roster WHERE emp=%s AND d=%s", (emp, d)))
+        return dict(d=d, code=s.code, color=s.color, day_type=s.day_type, set=explicit)
+
+    def my_roster(self, ym):
+        """員工自己的整月班表（手機、員工自助用）。"""
+        if not self.my_emp:
+            raise BizError("此帳號沒有對應員工")
+        first, last = ym_days(ym)
+        e = self.employee(self.my_emp)
+        sch = self.schedules([e], first, last)
+        cal = self.calendar_map(first, last)
+        out = []
+        d = first
+        while d <= last:
+            s = sch[(e["code"], d)]
+            out.append(dict(d=d, code=s.code, name=s.name, color=s.color, day_type=s.day_type, start=s.start,
+                            end=s.end, holiday=cal[d]["name"] if d in cal else ""))
+            d += dt.timedelta(days=1)
+        return out
+
     def roster_month(self, ym, dept=""):
         self.need("ATT", 1)
         first, last = ym_days(ym)
@@ -695,6 +720,11 @@ class AttMixin:
         if not tags and r["day_type"] == "W":
             tags.append("正常")
         return "、".join(tags)
+
+    def attendance_daily(self, d1, d2, dept=""):
+        """出勤日報畫面用（需要出勤管理查詢權限）。"""
+        self.need("ATT", 1)
+        return self.attendance(d1, d2, None, dept)
 
     def attendance_month(self, ym, dept="", emp=""):
         """出勤月報（每人一列）。"""

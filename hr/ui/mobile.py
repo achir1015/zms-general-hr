@@ -125,8 +125,8 @@ def connect_screen(app, msg="", url=""):
             ft.Row([T.icon_tile(ft.Icons.QR_CODE_SCANNER, "teal", 52, radius=16)],
                    alignment=ft.MainAxisAlignment.CENTER),
             ft.Text("連到公司的公司電腦", size=18, weight=ft.FontWeight.W_700),
-            T.muted("在電腦版「系統管理 → 手機連線」開啟服務後：用手機相機掃描畫面上的 QR Code 會自動帶入；"
-                    "或把畫面上的網址輸入下面。", 13),
+            T.muted("請向人資索取連線 QR Code（電腦版「系統管理 → 手機打卡與連線」）：用手機相機掃描會自動帶入；"
+                    "或把網址輸入下面。在公司用公司網址，外出時用 https 外出網址。", 13),
             url_f, info,
             ft.FilledButton("連線", icon=ft.Icons.LINK, height=48, on_click=go, bgcolor=T.PRIMARY,
                             style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=12)))],
@@ -249,7 +249,7 @@ def main(app):
         ft.IconButton(ft.Icons.VOLUME_UP, icon_color=ft.Colors.WHITE, tooltip="本頁說明",
                       on_click=lambda e: app.speak_page()),
         ft.IconButton(ft.Icons.HOME_ROUNDED, icon_color=ft.Colors.WHITE, tooltip="首頁",
-                      on_click=lambda e: app.go("home"))], spacing=0),
+                      on_click=lambda e: app.go(app.start_screen))], spacing=0),
         gradient=ft.LinearGradient(begin=ft.Alignment.CENTER_LEFT, end=ft.Alignment.CENTER_RIGHT,
                                    colors=[T.SIDEBAR_TOP, T.PRIMARY]),
         padding=ft.Padding.only(left=4, right=4, top=4, bottom=4))
@@ -282,7 +282,7 @@ def main(app):
     app.update_banner = ft.Container(visible=False)
     p.controls.clear()
     p.add(ft.SafeArea(ft.Column([top, app.body], expand=True, spacing=0), expand=True))
-    app.go("home")
+    app.go(app.start_screen)
     p.run_thread(check_update, app)
 
 

@@ -81,6 +81,10 @@ class PayMixin:
             raise BizError("%s %s薪資已確認，不能再修改變動輸入（請先取消確認）" % (rocdate.ym_show(ym), RUN_KIND[kind]))
 
     # ================================================================ 津貼獎金規則
+    def bonus_rule_list(self):
+        self.need("BON", 1)
+        return self.db.rows("SELECT id, name FROM bonus_rules WHERE active=1 ORDER BY id")
+
     def bonus_preview(self, rule_id, as_of):
         """依規則試算每位員工的金額：[(員工, 姓名, 基數, 比例, 金額, 說明)]。"""
         self.need("BON", 1)
@@ -163,6 +167,7 @@ class PayMixin:
         return rows
 
     def payroll_run(self, rid):
+        self.need("PAY", 1)
         r = self.db.row("SELECT * FROM payroll_runs WHERE id=%s", (rid,))
         if not r:
             raise BizError("薪資批次不存在")

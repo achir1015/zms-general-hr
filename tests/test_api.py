@@ -59,7 +59,18 @@ def test_punch_page_and_self_service(api, biz):
     assert biz.db.value("SELECT emp FROM leave_requests WHERE id=%s", (lid,)) == "E001"
     with pytest.raises(BizError):
         rb._c.call("books", "employees", [], {})                       # 員工沒有員工資料權限
-    for bad in ("premium_preview", "employee", "wage_basis", "salary_on", "insured_wages", "schedules", "login", "db",
+    assert rb.premium_preview("E001")["labor_wage"] > 0               # 自己的保費試算可以看
+    with pytest.raises(BizError, match="薪資個資"):
+        rb.premium_preview("E002")                                     # 別人的不行
+    assert len(rb.my_roster("202612")) == 31
+    assert rb.balance_info("E001", "A") == 0                          # 請假視窗用的額度查詢（自己的）
+    h, txt = rb.leave_hours_check("E001", "PERSONAL", "115/12/02 09:00", "115/12/02 18:00")
+    assert h == 8
+    with pytest.raises(BizError):
+        rb.balance_info("E002", "A")                                   # 別人的不行
+    with pytest.raises(BizError):
+        rb.dashboard()                                                 # 員工帳號沒有公司首頁
+    for bad in ("employee", "wage_basis", "salary_on", "insured_wages", "schedules", "login", "db",
                 "export_gl_batch", "export_xiaoke_shift", "balance_summary"):
         with pytest.raises(BizError, match="不允許"):
             rb._c.call("books", bad, [], {})
