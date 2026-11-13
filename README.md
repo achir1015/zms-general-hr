@@ -17,7 +17,7 @@
 | Windows 10／11（64 位元） | `ZMSGeneralHR-Setup-版本.exe` |
 | macOS 11 以上（MacBook Pro 等） | `ZMSGeneralHR-版本-mac.dmg` |
 | Android 7.0 以上手機 | `ZMSGeneralHR-版本-android.apk` |
-| iPhone（App 規劃中） | 用 Safari 開公司公告的「GPS 打卡網址」，可「加入主畫面」 |
+| iPhone（直向）／iPad（橫向） | 用 Safari 開 [安裝頁](https://achir1015.github.io/zms-general-hr/ios/) 安裝（已登記的裝置） |
 
 ### Windows
 
@@ -40,11 +40,19 @@
 - **人資與主管帳號**的功能和電腦版相同；備份、版本更新、會計拋轉、檔案匯入匯出請在電腦版操作。
 - 有新版本時，App 選單最上方會出現提示，點一下下載新的 APK 覆蓋安裝，資料不受影響。
 
+### iPhone／iPad
+
+- 用 Safari 開啟 [安裝頁](https://achir1015.github.io/zms-general-hr/ios/)，按「安裝到這台 iPhone／iPad」→「安裝」。
+  目前是內部測試發佈（Ad Hoc），只有在開發者帳號登記過的裝置能安裝；其他 iPhone 可先用 Safari 開公司公告的「GPS 打卡網址」。
+- 連線方式與 Android 相同（掃人資提供的 QR Code）。第一次連線請允許「區域網路」；若顯示「No route to host」，
+  到「設定 → App → 資料助秘之一般公司人事薪資差勤」打開「區域網路」。
+- iPhone 用手機版面（員工直接進入 GPS 打卡）；iPad 橫向使用電腦版版面（側邊選單），資料一樣透過公司電腦。
+
 電腦版（Windows、macOS）都內附 MariaDB 資料庫，開啟程式自動啟動、關閉程式自動停止，不必另外安裝；
 程式開啟時自動檢查新版本，按「下載並安裝」即可更新。
 
 平台順序：Windows 11 → MacBook Pro → Android → iPhone → iPad（之後的版本陸續推出）。
-iPhone 目前請用瀏覽器開「GPS 打卡網頁」打卡與請假；iPhone／iPad App 為下一階段。
+沒有登記的 iPhone 可以用 Safari 開「GPS 打卡網頁」打卡與請假。
 
 ## 主要功能
 
@@ -81,7 +89,10 @@ macOS（在 Mac 上）：`bash tools/build_macos.sh`（需要 Developer ID 憑�
 
 Android（在 Mac 上）：`bash tools/build_android.sh`，產生 `dist-android/ZMSGeneralHR-<版本>-android.apk`
 （簽章金鑰 `android/zmsgeneralhr.jks` 不進 git，請另外備份）。開發時可用 `python main.py --server` 加 `python run_web_mobile.py`
-（http://127.0.0.1:8581）預覽手機版面。
+（http://127.0.0.1:8581）預覽手機版面；`python run_web_tablet.py`（8582）預覽 iPad 版面。
+
+iPhone／iPad（在 Mac 上）：`bash tools/ios_in_terminal.sh`（在終端機視窗執行 `tools/build_ios.sh`，結果寫在 `build-ios.log`），
+產生 `dist-ios/ZMSGeneralHR-<版本>-ios.ipa`；發佈時以 `ZMSGeneralHR-ios.ipa` 上傳到 Release，並更新 `docs/ios/manifest.plist` 的 bundle-version。
 
 需要 MariaDB（開發用 `C:\mariadb`，安裝檔會內附）。資料庫埠：開發 3378、手機連線服務 8785。
 
