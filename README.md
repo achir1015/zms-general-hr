@@ -1,4 +1,6 @@
 # 資料助秘之一般公司人事薪資差勤
+<img width="1426" height="891" alt="image" src="https://github.com/user-attachments/assets/d2118434-57c7-4b3b-a313-7cb507da9d6e" />
+<img width="1429" height="891" alt="image" src="https://github.com/user-attachments/assets/d9b91d43-7b59-4ccb-9a77-7da23f65a210" />
 
 單一公司使用的人事、排班、GPS 打卡、請假加班、薪資、勞健保退休金系統，並可把薪資與保費拋轉成
 「[資料助秘之一般公司會計](https://github.com/achir1015/zms-accounting)」的傳票。
