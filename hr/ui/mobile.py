@@ -162,9 +162,7 @@ def connect(app, url, quiet=False):
     except BizError as e:
         msg = str(e) if not quiet else "上次的公司電腦目前連不上：%s" % e
         if app.page.platform == ft.PagePlatform.IOS and ("No route to host" in msg or "Errno 65" in msg):
-            msg += ("
-
-iPhone／iPad 第一次連公司電腦，要允許本 App 使用「區域網路」：請到「設定 → App（或隱私權與安全性）"
+            msg += ("\n\niPhone／iPad 第一次連公司電腦，要允許本 App 使用「區域網路」：請到「設定 → App（或隱私權與安全性）"
                     "→ 區域網路」，打開「資料助秘之一般公司人事薪資差勤」，再回來按「連線」。"
                     "外出時請改用 https 外出網址。")
         connect_screen(app, msg, url)
