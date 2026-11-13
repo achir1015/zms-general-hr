@@ -6,14 +6,29 @@
 
 系統開發：吳玉柱 先生 與 Claude AI Opus 5.5
 
-## 下載安裝（Windows 11）
+## 下載安裝
 
-到 [Releases](https://github.com/achir1015/zms-general-hr/releases/latest) 下載 `ZMSGeneralHR-Setup-版本.exe` 執行即可：
+到 [Releases](https://github.com/achir1015/zms-general-hr/releases/latest) 下載：
 
-- 安裝時可勾選「建立桌面捷徑」；開始功能表另有「使用說明與資料資料夾」。
-- 內附 MariaDB 資料庫，開啟程式自動啟動、關閉程式自動停止，不必另外安裝。
+| 平台 | 檔案 |
+|---|---|
+| Windows 10／11（64 位元） | `ZMSGeneralHR-Setup-版本.exe` |
+| macOS 11 以上（MacBook Pro 等） | `ZMSGeneralHR-版本-mac.dmg` |
+| 員工手機（Android／iPhone） | 不必安裝：用瀏覽器開公司公告的「GPS 打卡網址」 |
+
+### Windows
+
+- 執行安裝檔，可勾選「建立桌面捷徑」；開始功能表另有「使用說明與資料資料夾」。
 - 資料存放在 `%LOCALAPPDATA%\ZMSGeneralHR`，更新或解除安裝都不會刪除。
-- 程式開啟時自動檢查新版本，按「下載並安裝」即可更新。
+
+### macOS
+
+- 打開 DMG，把「資料助秘之一般公司人事薪資差勤」拖進「應用程式」資料夾，之後可以拖到 Dock 常駐。
+- 已用 Apple Developer ID 簽章並通過 Apple 公證（Notarized），可以直接開啟。
+- 資料存放在 `~/Library/Application Support/ZMSGeneralHR`，更新或刪除 App 都不會刪除。
+
+兩個平台都內附 MariaDB 資料庫，開啟程式自動啟動、關閉程式自動停止，不必另外安裝；
+程式開啟時自動檢查新版本，按「下載並安裝」即可更新。
 
 平台順序：Windows 11 → MacBook Pro → Android → iPhone → iPad（之後的版本陸續推出）。
 員工的手機（Android／iPhone）目前用瀏覽器開「GPS 打卡網頁」打卡與請假，不必安裝 App。
@@ -47,6 +62,9 @@ py -3.12 -m venv .venv
 .venv\Scripts\python -m pytest -q tests      # 測試（測試資料庫埠 3388）
 .venv\Scripts\python tools\build_windows.py  # 建置 dist-installer\ZMSGeneralHR-Setup-<版本>.exe
 ```
+
+macOS（在 Mac 上）：`bash tools/build_macos.sh`（需要 Developer ID 憑證與 notarytool 設定檔 `zms-notary`；
+從 SSH 觸發請用 `bash tools/mac_in_terminal.sh`，在終端機視窗建置以使用鑰匙圈），產生 `dist-mac/ZMSGeneralHR-<版本>-mac.dmg`。
 
 需要 MariaDB（開發用 `C:\mariadb`，安裝檔會內附）。資料庫埠：開發 3378、手機連線服務 8785。
 

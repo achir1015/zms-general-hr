@@ -44,7 +44,7 @@ pb "Delete :LSMinimumSystemVersion"; pb "Add :LSMinimumSystemVersion string 11.0
 pb "Delete :LSApplicationCategoryType"; pb "Add :LSApplicationCategoryType string public.app-category.business"
 pb "Delete :NSHumanReadableCopyright"; pb "Add :NSHumanReadableCopyright string 系統開發：吳玉柱 先生 與 Claude AI Opus 5.5"
 pb "Delete :NSLocalNetworkUsageDescription"
-pb "Add :NSLocalNetworkUsageDescription string 連到區域網路上的會計系統（拋轉傳票）或 MariaDB 進銷存資料庫"
+pb "Add :NSLocalNetworkUsageDescription string 讓同一個網路的員工手機連到本機打卡，或連到會計系統拋轉傳票"
 pb "Delete :NSAppleEventsUsageDescription"
 pb "Add :NSAppleEventsUsageDescription string 在桌面建立本系統的替身"
 
